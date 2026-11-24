@@ -3,7 +3,7 @@ window.CONFIG = {
   // Lista de invitados. Por defecto se lee el archivo invitados.csv de esta misma carpeta.
   // Opcional: pega aquí el enlace CSV de una hoja de Google publicada
   // (Archivo → Compartir → Publicar en la web → CSV) para editar la lista sin volver a subir la web.
-  listaInvitados: './invitados.csv',
+  listaInvitados: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTQEhswaNUKTwpYVN9XbXvU7hlMH5nJr7dloOMqhSeXHrMxt6nYwCrRqKZqi7vgUBPnOqiBhFImWOta/pub?output=csv',
 };
 
 // Los 8 reinos del mapa. "foco" es el punto del mapa (en %) al que se acerca la cámara;
