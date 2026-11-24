@@ -44,21 +44,21 @@ button{cursor:pointer}
   filter:drop-shadow(0 24px 44px rgba(0,0,0,.55))}
 /* marco de bienvenida (852×1431) como borde de imagen: el arco con la placa M&M (440 px), los costados de vitral (120/122 px)
    y la flor de lis (181 px) mantienen su forma; solo el pergamino y los costados crecen hacia abajo según el contenido */
-.welcome .inner{display:flex;flex-direction:column;align-items:center;gap:2.4cqw;text-align:center;padding:0 1.5cqw 1cqw;
+.welcome .inner{display:flex;flex-direction:column;align-items:center;gap:1.35cqw;text-align:center;padding:0 1.5cqw;
   border-style:solid;border-color:transparent;border-width:51.64cqw 14.32cqw 21.24cqw 14.08cqw;
   border-image-source:url('./assets/marco_bienvenida.webp');border-image-slice:440 122 181 120 fill;border-image-width:51.64cqw 14.32cqw 21.24cqw 14.08cqw;
-  border-image-repeat:stretch round}
-.date{margin:0;font-weight:500;font-size:4.1cqw;letter-spacing:.16em;color:#6f5323;font-variant-numeric:lining-nums}
+  border-image-repeat:stretch}
+.date{margin:-5cqw 0 0;font-weight:500;font-size:5.4cqw;letter-spacing:.16em;color:#6f5323;font-variant-numeric:lining-nums}
 .date span{color:var(--gold);font-size:.8em;margin:0 .35em;vertical-align:.08em}
-#welcome{margin:0;font-style:italic;font-weight:600;font-size:14cqw;line-height:.95;letter-spacing:-.005em;color:var(--ink)}
-.lead{margin:0;font-style:italic;font-weight:500;font-size:4.75cqw;line-height:1.22;color:#2b3f2c;max-width:96%}
+#welcome{margin:0;font-style:italic;font-weight:600;font-size:15.5cqw;line-height:.88;letter-spacing:-.005em;color:var(--ink)}
+.lead{margin:0;font-style:italic;font-weight:500;font-size:5.6cqw;line-height:1.1;color:#2b3f2c;max-width:96%}
 .orn{display:block;user-select:none;pointer-events:none}
-.orn.lis{width:72%}
-.orn.lirio{width:58%}
-label{display:block;font-style:italic;font-weight:600;font-size:5.6cqw;line-height:1.12;color:var(--ink);max-width:92%}
+.orn.lis{width:52%}
+.orn.lirio{width:42%}
+label{display:block;font-style:italic;font-weight:600;font-size:6cqw;line-height:1.02;color:var(--ink);max-width:92%}
 .search{position:relative;width:100%}
-#guest{width:100%;min-height:44px;padding:2.6cqw 11cqw 2.6cqw 4.2cqw;border-radius:2.6cqw;border:1.5px solid #cfa85e;background:#fffaf0;color:var(--ink);
-  font-size:max(16px,4.6cqw);font-style:italic;font-weight:500;box-shadow:inset 0 2px 5px rgba(120,90,40,.16),0 1px 0 rgba(255,255,255,.7);transition:border-color .2s,box-shadow .2s}
+#guest{width:100%;min-height:44px;padding:2.6cqw 11cqw;text-align:center;border-radius:2.6cqw;border:1.5px solid #cfa85e;background:#fffaf0;color:var(--ink);
+  font-size:max(16px,5.6cqw);font-style:italic;font-weight:500;box-shadow:inset 0 2px 5px rgba(120,90,40,.16),0 1px 0 rgba(255,255,255,.7);transition:border-color .2s,box-shadow .2s}
 #guest::placeholder{color:#8b7a58;opacity:1}
 #guest:hover{border-color:var(--gold)}
 #guest:focus{outline:none;border-color:var(--btn);box-shadow:inset 0 2px 5px rgba(120,90,40,.16),0 0 0 3px rgba(40,106,50,.25)}
@@ -67,7 +67,7 @@ label{display:block;font-style:italic;font-weight:600;font-size:5.6cqw;line-heig
 .matches{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fffaf0;border:1px solid #cfa85e;border-radius:10px;overflow:hidden;z-index:3;box-shadow:0 14px 30px rgba(40,30,10,.3);text-align:left}
 .match{display:block;width:100%;min-height:44px;padding:10px 16px;border:0;background:none;color:var(--ink);font-size:18px;font-style:italic;font-weight:600;text-align:left}
 .match:hover,.match:focus-visible,.match[aria-selected="true"]{background:#f3e3bd;outline:none}
-.nohit{margin:0;font-size:3.8cqw;font-style:italic;color:#8a3b2a}
+.nohit{margin:0;font-size:4.4cqw;font-style:italic;color:#8a3b2a}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:44px;padding:10px 20px;border-radius:12px;font-weight:700;font-size:18px;letter-spacing:.01em;
   transition:transform .15s,box-shadow .2s,filter .2s}
 .btn.primary{border:0;color:#fff8e4;background:linear-gradient(180deg,#3c8a45 0%,var(--btn) 55%,var(--btnDark) 100%);
@@ -78,9 +78,10 @@ label{display:block;font-style:italic;font-weight:600;font-size:5.6cqw;line-heig
 .btn.ghost{border:1.5px solid rgba(243,212,140,.85);background:rgba(10,30,16,.55);color:#fff3d6;backdrop-filter:blur(6px)}
 .btn.ghost:hover{background:rgba(10,30,16,.75)}
 .btn:disabled{cursor:not-allowed;opacity:.82}
-.go{width:100%;font-size:max(16px,5cqw);padding:2.6cqw 4cqw;border-radius:2.6cqw}
-.signature{margin:0;font-style:italic;font-weight:600;font-size:7.6cqw;line-height:1;color:var(--ink)}
-.signature span{color:var(--gold)}
+.go{width:100%;font-size:max(14px,5.3cqw);gap:.3em;padding:2.6cqw 3cqw;border-radius:2.6cqw;white-space:nowrap}
+.go::before{content:"✦";visibility:hidden}   /* estrella invisible a la izquierda: equilibra la de la derecha y el texto queda centrado */
+.signature{margin:0;font-style:italic;font-weight:600;font-size:7.6cqw;line-height:.92;color:var(--ink)}
+.signature span{display:block;color:var(--gold);font-size:.75em;line-height:1}   /* Matías · & · Monserrat en tres líneas */
 .demo{margin:0;font-style:italic;font-size:14px;color:rgba(255,240,207,.8);text-align:center}
 
 /* ---------- Narración ---------- */
