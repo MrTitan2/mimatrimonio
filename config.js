@@ -12,7 +12,7 @@ window.REINOS = {
   muy_muy_lejano:  { nombre: 'Muy Muy|Lejano',             foco: [16, 30], cartel: [14.8, 37.8] },
   duloc:           { nombre: 'Duloc',                      foco: [40, 31], cartel: [39.0, 38.7] },
   dragon:          { nombre: 'Castillo del|Dragón',        foco: [65, 30], cartel: [64.2, 37.8] },
-  manzana:         { nombre: 'La Manzana|Envenenada',      foco: [88, 32], cartel: [87.4, 39.1] },
+  manzana:         { nombre: 'La Manzana|Envenenada',      foco: [86, 33], cartel: [86.5, 42.2] },
   worcestershire:  { nombre: 'Worcestershire',             foco: [14.5, 68], cartel: [14.2, 75.5] },
   rumpelstiltskin: { nombre: 'Palacio de|Rumpelstiltskin', foco: [37, 69], cartel: [36.6, 75.5] },
   pociones:        { nombre: 'Fábrica de|Pociones',        foco: [60, 70], cartel: [60.4, 76.4] },

@@ -35,7 +35,7 @@
 
   // ---------------------------------------------------------- mapa
   const stage = $('#stage'), map = $('#map'), img = $('#mapImg'), spot = $('#spot'), pin = $('#pin');
-  const MW = 2896, MH = 2172;               // tamaño natural de mapa.webp (mapa_mini.webp tiene la misma proporción)
+  const MW = 1448, MH = 1086;               // tamaño natural de mapa.webp (mapa_mini.webp tiene la misma proporción)
   // en la bienvenida basta la versión liviana (va desenfocada); la grande (1,7 MB) se pide
   // cuando el invitado empieza a escribir, al iniciar el viaje o unos segundos después de cargar
   let mapaGrande = null;
