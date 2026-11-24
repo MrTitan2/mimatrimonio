@@ -6,6 +6,9 @@
   const norm = s => (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const wait = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
+  // duración de la cámara (ms) al ir a un reino desde el mapa libre o "Volver a mi reino", y a la vista general
+  const VUELO = 3200;
+  const LLEGADA = Math.round(VUELO * .75);   // cuándo se marca el reino / aparece el cartel, casi al terminar el vuelo
   const REINOS = window.REINOS;
 
   // ---------------------------------------------------------- invitados
@@ -64,6 +67,33 @@
   }
   function panelIzq(id) { return desktop() && REINOS[id].foco[0] > 50; }
 
+  // vista final de un reino (sin aplicarla): la misma de focusOn
+  function vistaReino(id) {
+    const r = REINOS[id], resultW = desktop() ? Math.min(W() * .44, 520) : 0, izq = panelIzq(id);
+    const fx = desktop() ? (izq ? resultW + (W() - resultW) / 2 : (W() - resultW) / 2) : W() / 2, fy = H() * (desktop() ? .5 : .4);
+    let s = desktop() ? (H() / (MH * .62)) : (W() / (MW * .3)); s = Math.max(s, W() / MW, H() / MH);
+    return { s, x: clamp(fx - r.foco[0] / 100 * MW * s, W() - MW * s, 0), y: clamp(fy - r.foco[1] / 100 * MH * s, H() - MH * s, 0) };
+  }
+  // acercamiento anclado: el punto P (px del mapa) no sale de la vista. Mientras el mapa es más chico que la pantalla
+  // queda centrado en ese eje y después la foto hace de tope (no se ve el corte)
+  function acercarA(P, destino, ms, token) {
+    const a = { ...view }, pa = [a.x + P[0] * a.s, a.y + P[1] * a.s], pb = [destino.x + P[0] * destino.s, destino.y + P[1] * destino.s], t0 = performance.now();
+    const ease = t => -(Math.cos(Math.PI * t) - 1) / 2;
+    return new Promise(fin => (function paso(now) {
+      if (token !== enCurso) return fin();
+      const t = clamp((now - t0) / ms, 0, 1), e = ease(t);
+      view.s = a.s * Math.pow(destino.s / a.s, e);
+      view.x = pa[0] + (pb[0] - pa[0]) * e - P[0] * view.s; view.y = pa[1] + (pb[1] - pa[1]) * e - P[1] * view.s;
+      limitView(); apply(false); ViajeLuz.redibujar();
+      t < 1 ? requestAnimationFrame(paso) : fin();
+    })(t0));
+  }
+  function marcarReino(id) {   // posición del foco (oscurecimiento alrededor) y de la marca brillante sobre el letrero
+    const r = REINOS[id], sx = view.x + r.foco[0] / 100 * MW * view.s, sy = view.y + r.foco[1] / 100 * MH * view.s;
+    spot.style.setProperty('--sx', (sx / W() * 100) + '%'); spot.style.setProperty('--sy', (sy / H() * 100) + '%');
+    pin.style.left = r.cartel[0] + '%'; pin.style.top = (r.cartel[1] - 1) + '%';
+  }
+
   function focusOn(id, animate) {
     const r = REINOS[id];
     const resultW = desktop() ? Math.min(W() * .44, 520) : 0;
@@ -93,8 +123,12 @@
   }
 
   // ---------------------------------------------------------- estado / flujo
-  let estado = 'intro', elegido = null, enCurso = 0;
-  function setEstado(e) { estado = e; document.body.className = 'state-' + e; }
+  let estado = 'intro', elegido = null, enCurso = 0, faseViaje = '';   // faseViaje: 'luz' (mapa completo quieto) | 'acercamiento'
+  function setEstado(e) {
+    estado = e; document.body.className = 'state-' + e;
+    ViajeLuz.luciernagas(e === 'intro' ? 'intro' : e === 'libre' ? 'libre' : null);   // luciérnagas de ambiente
+    if (e !== 'libre') $('#halo').hidden = true;
+  }
   function banner(t) { if (!t) { $('#banner').hidden = true; return; } $('#bannerText').textContent = t; $('#banner').hidden = false; $('#banner').style.animation = 'none'; void $('#banner').offsetWidth; $('#banner').style.animation = ''; }
 
   let cartelActual = null;
@@ -103,6 +137,7 @@
     const nombre = REINOS[id].nombre.replace('|', ' ');
     $('#cartel').src = `./assets/carteles/${id}.webp`;
     $('#cartel').alt = 'Cartel de ' + nombre;
+    $('#cartelWrap').style.setProperty('--m', `url("./assets/carteles/${id}.webp")`);   // el brillo toma la forma del cartel
   }
 
   async function viaje(g) {
@@ -115,16 +150,19 @@
     $('#result').hidden = true; $('#mapHud').hidden = true;
     stage.classList.remove('blurred', 'soft');
     spot.classList.remove('on'); pin.hidden = true;
-    overview(false);
-    banner('Abriendo el Mapa de los Reinos…');
-    await wait(1700); if (token !== enCurso) return;
-    banner('Buscando el reino de ' + g.nombre.split(' ')[0] + '…');
-    await wait(900); if (token !== enCurso) return;
-    focusOn(g.reino, true);
-    await wait(1500); if (token !== enCurso) return;
-    spot.classList.add('on'); pin.hidden = false;
-    banner('¡Aquí está tu reino!');
-    await wait(desktop() ? 1100 : 1900); if (token !== enCurso) return;
+    // 1) mapa completo y quieto · 2) la luciérnaga viaja desde la Finca por el camino (viaje.js)
+    // 3) acercamiento directo al punto donde llegó · 4) cartel
+    overview(false); faseViaje = 'luz';
+    await ViajeLuz.recorrer(g.reino, g.nombre); if (token !== enCurso) return;
+    faseViaje = 'acercamiento';
+    const destino = vistaReino(g.reino);
+    marcarReino(g.reino); pin.hidden = false;   // la marca se ubica en su letrero antes de mostrarse
+    if (reduced) { Object.assign(view, destino); apply(false); }
+    else await acercarA(ViajeLuz.llegada(g.reino), destino, 1400, token);
+    if (token !== enCurso) return;
+    marcarReino(g.reino); spot.classList.add('on');
+    ViajeLuz.apagarCamino(900);
+    await wait(500); if (token !== enCurso) return;
     banner('');
     mostrarResultado(g.reino, true);
   }
@@ -138,6 +176,9 @@
     $('#result').hidden = false;
     stage.classList.toggle('soft', !desktop());   // en celular el mapa queda de fondo, suave
     const r = $('#result'); r.style.animation = 'none'; void r.offsetWidth; r.style.animation = '';
+    // celebración: el brillo cruza el vitral una vez y caen chispas cuando el cartel termina de aparecer
+    const w = $('#cartelWrap'); w.classList.remove('brilla'); void w.offsetWidth; w.classList.add('brilla');
+    const token = enCurso; setTimeout(() => { if (token === enCurso && estado === 'resultado') ViajeLuz.celebrar($('#cartel').getBoundingClientRect()); }, 750);
   }
 
   function mapaLibre() {
@@ -149,7 +190,7 @@
     const c = elegido ? REINOS[elegido.reino].foco : [50, 50];
     view.s = s; view.x = W() / 2 - c[0] / 100 * MW * s; view.y = H() / 2 - c[1] / 100 * MH * s;
     limitView(); apply(true);
-    setTimeout(() => map.classList.remove('anim'), 2300);
+    setTimeout(() => map.classList.remove('anim'), VUELO + 100);
     $('#mapHud').hidden = false;
   }
   // alternativa a pellizcar / rueda: botones + − y teclado (+, −, flechas)
@@ -175,7 +216,8 @@
   });
 
   function volverIntro() {
-    ++enCurso; elegido = null;
+    ++enCurso; elegido = null; map.style.transitionDuration = '';
+    ViajeLuz.detener();
     setEstado('intro');
     $('#result').hidden = true; $('#mapHud').hidden = true; banner('');
     spot.classList.remove('on'); pin.hidden = true;
@@ -243,11 +285,11 @@
   $('#seeMap').addEventListener('click', mapaLibre);
   $('#again').addEventListener('click', volverIntro);
   $('#again2').addEventListener('click', volverIntro);
-  $('#mine').addEventListener('click', () => { if (!elegido) return volverIntro(); $('#mapHud').hidden = true; focusOn(elegido.reino, true); spot.classList.add('on'); pin.hidden = false; setTimeout(() => mostrarResultado(elegido.reino, true), reduced ? 0 : 1600); });
+  $('#mine').addEventListener('click', () => { if (!elegido) return volverIntro(); $('#mapHud').hidden = true; focusOn(elegido.reino, true); spot.classList.add('on'); pin.hidden = false; setTimeout(() => mostrarResultado(elegido.reino, true), reduced ? 0 : LLEGADA); });
 
   // ---------------------------------------------------------- mapa libre: arrastrar, pellizcar, tocar reinos
   const ptrs = new Map(); let moved = 0, pinch0 = null;
-  stage.addEventListener('pointerdown', e => { if (estado !== 'libre') return; stage.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); moved = 0; map.classList.remove('anim', 'quick'); });
+  stage.addEventListener('pointerdown', e => { if (estado !== 'libre') return; try { stage.setPointerCapture(e.pointerId); } catch (err) { /* sin captura igual funciona */ } ptrs.set(e.pointerId, [e.clientX, e.clientY]); moved = 0; map.classList.remove('anim', 'quick'); });
   stage.addEventListener('pointermove', e => {
     if (estado !== 'libre' || !ptrs.has(e.pointerId)) return;
     const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
@@ -268,20 +310,40 @@
     const s2 = clamp(view.s * f, fitScale(), fitScale() * 4.5); f = s2 / view.s;
     view.x = cx - (cx - view.x) * f; view.y = cy - (cy - view.y) * f; view.s = s2;
   }
-  function tocarMapa(cx, cy) {
+  // reino cuyo letrero está bajo un punto de la pantalla (o null)
+  function reinoEn(cx, cy) {
     const mx = (cx - view.x) / (MW * view.s) * 100, my = (cy - view.y) / (MH * view.s) * 100;
     let best = null, bd = 1e9;
     Object.entries(REINOS).forEach(([id, r]) => { const d = Math.hypot((mx - r.cartel[0]) * 1.33, my - r.cartel[1]); if (d < bd) { bd = d; best = id; } });
-    if (best && bd < 11) { $('#mapHud').hidden = true; focusOn(best, true); spot.classList.add('on'); pin.hidden = false; setTimeout(() => mostrarResultado(best, elegido && elegido.reino === best), reduced ? 0 : 1500); }
+    return bd < 11 ? best : null;
+  }
+  function halo(id) {
+    const h = $('#halo'); if (!id) { h.hidden = true; return; }
+    if (h.hidden || h.dataset.id !== id) { h.dataset.id = id; h.style.left = REINOS[id].cartel[0] + '%'; h.style.top = REINOS[id].cartel[1] + '%'; h.hidden = false; }
+  }
+  // letreros vivos: con mouse, el letrero bajo el puntero brilla
+  stage.addEventListener('pointermove', e => { if (estado === 'libre' && e.pointerType === 'mouse' && !ptrs.size) halo(reinoEn(e.clientX, e.clientY)); });
+  stage.addEventListener('pointerleave', () => { if (estado === 'libre') halo(null); });
+  function tocarMapa(cx, cy) {
+    const best = reinoEn(cx, cy);
+    if (best) {
+      halo(best); $('#mapHud').hidden = true; focusOn(best, true); spot.classList.add('on'); pin.hidden = false; setTimeout(() => mostrarResultado(best, elegido && elegido.reino === best), reduced ? 0 : LLEGADA); }
   }
 
   // ---------------------------------------------------------- tamaño
   addEventListener('resize', () => {
     if (estado === 'resultado' && cartelActual) focusOn(cartelActual, false);
-    else if (estado === 'libre') { limitView(); apply(false); } else overview(false, estado === 'intro');
+    else if (estado === 'libre') { limitView(); apply(false); }
+    else if (estado === 'viaje') {   // el viaje sigue alineado (barra del navegador, giro del teléfono)
+      if (faseViaje === 'luz') overview(false); else { limitView(); apply(false); }
+      ViajeLuz.redibujar();
+    }
+    else overview(false, true);
   });
 
   // ---------------------------------------------------------- inicio
+  map.style.setProperty('--vuelo', VUELO + 'ms');
+  ViajeLuz.iniciar({ MW, MH, getView: () => view, banner });
   setEstado('intro');
   overview(false, true);
   cargarInvitados();

@@ -12,8 +12,8 @@
 <meta property="og:url" content="https://mrtitan2.github.io/mimatrimonio/">
 <meta property="og:title" content="Mapa de los Reinos · Matías & Monserrat">
 <meta property="og:description" content="Encuentra tu lugar en nuestra historia · 12.12.2026">
-<meta property="og:image" content="https://mrtitan2.github.io/mimatrimonio/assets/og.jpg?v=3">
-<meta property="og:image:secure_url" content="https://mrtitan2.github.io/mimatrimonio/assets/og.jpg?v=3">
+<meta property="og:image" content="https://mrtitan2.github.io/mimatrimonio/assets/og.jpg?v=4">
+<meta property="og:image:secure_url" content="https://mrtitan2.github.io/mimatrimonio/assets/og.jpg?v=4">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="960">
 <meta property="og:image:height" content="504">
@@ -33,14 +33,15 @@
   <div id="map" class="map">
     <img id="mapImg" src="./assets/mapa_mini.webp" alt="" draggable="false">
     <div id="pin" class="pin" hidden><i></i><i></i><b></b></div>
+    <div id="halo" class="halo" hidden></div>
   </div>
 </div>
 <div id="spot" class="spot"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
 
 <!-- Bienvenida -->
 <section id="intro" class="overlay visible" aria-labelledby="welcome">
   <form class="welcome" id="welcomeForm" autocomplete="off">
-    <img class="frame" src="./assets/marco_bienvenida.webp" alt="">
     <div class="inner">
       <p class="date"><span aria-hidden="true">✦</span> 12 · 12 · 2026 <span aria-hidden="true">✦</span></p>
       <h1 id="welcome">Bienvenidos</h1>
@@ -69,7 +70,7 @@
 <section id="result" class="result" hidden aria-live="polite">
   <p id="greet" class="greet">Ana,</p>
   <p class="sub" id="sub">tu lugar en nuestra historia es…</p>
-  <img class="cartel" id="cartel" src="" alt="">
+  <div class="cartelWrap" id="cartelWrap"><img class="cartel" id="cartel" src="" alt=""></div>
   <div class="actions">
     <button id="seeMap" class="btn primary" type="button">Ver el mapa completo</button>
     <button id="again" class="btn ghost" type="button">Buscar otro invitado</button>
@@ -91,6 +92,7 @@
 
 <div class="brand">M <span>&amp;</span> M <small>12.12.2026</small></div>
 <script src="./config.js"></script>
+<script src="./viaje.js"></script>
 <script src="./app.js"></script>
 </body>
 </html>
