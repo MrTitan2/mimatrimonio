@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#123D26">
+<meta name="robots" content="noindex">
+<title>Mapa de los Reinos · Matías & Monserrat</title>
+<meta name="description" content="Encuentra tu lugar en nuestra historia · 12.12.2026">
+<link rel="preload" href="./assets/marco_bienvenida.webp" as="image">
+<link rel="preload" href="./assets/Cormorant-Italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./assets/Cormorant.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<!-- Mapa -->
+<div class="bgmap" aria-hidden="true"></div>
+<div id="stage" class="stage blurred" aria-hidden="true">
+  <div id="map" class="map">
+    <img id="mapImg" src="./assets/mapa.webp" alt="" draggable="false">
+    <div id="pin" class="pin" hidden><i></i><i></i><b></b></div>
+  </div>
+</div>
+<div id="spot" class="spot"></div>
+
+<!-- Bienvenida -->
+<section id="intro" class="overlay visible" aria-labelledby="welcome">
+  <form class="welcome" id="welcomeForm" autocomplete="off">
+    <img class="frame" src="./assets/marco_bienvenida.webp" alt="">
+    <div class="inner">
+      <p class="date"><span aria-hidden="true">✦</span> 12 · 12 · 2026 <span aria-hidden="true">✦</span></p>
+      <h1 id="welcome">Bienvenidos</h1>
+      <p class="lead">Gracias por ser parte de nuestra historia. Un rincón de este cuento te está esperando.</p>
+      <img class="orn lis" src="./assets/adorno_lis.webp" alt="">
+      <label for="guest">Escribe tu nombre para encontrar tu reino</label>
+      <div class="search">
+        <input id="guest" name="guest" type="search" placeholder="Nombre y apellido..." autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="go"
+          role="combobox" aria-autocomplete="list" aria-controls="matches" aria-expanded="false" aria-describedby="nohit">
+        <svg class="quill" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 3.2c-5.6.6-10.2 4.4-12.3 9.6l-1.7 4.3 1.2.5 1.1-2.7c1.4.2 2.8-.1 4-.8l-1.8-.6 2.6-.8c1.6-1.2 2.9-2.9 3.7-4.9l-1.9.1 2.4-1.2c.6-1.1 1-2.3 1.2-3.5h.5zM4.6 20.8l1.4-3.6 1.2.5-1.4 3.6z"/></svg>
+        <div id="matches" class="matches" role="listbox" aria-label="Invitados encontrados" hidden></div>
+      </div>
+      <p id="nohit" class="nohit" role="status" hidden>No encontramos ese nombre. Prueba solo con tu nombre o tu apellido.</p>
+      <button id="go" class="btn primary go" type="submit" disabled>Ver mi lugar en el mapa <span aria-hidden="true">✦</span></button>
+      <img class="orn lirio" src="./assets/adorno_lirio.webp" alt="">
+      <p class="signature">Matías <span>&amp;</span> Monserrat</p>
+    </div>
+  </form>
+  <p class="demo">Prueba con: Ana Pérez, Luis Soto, Sofía Morales…</p>
+</section>
+
+<!-- Narración -->
+<div id="banner" class="banner" hidden><span aria-hidden="true">✦</span> <span id="bannerText">Abriendo el Mapa de los Reinos…</span></div>
+
+<!-- Cartel del reino -->
+<section id="result" class="result" hidden aria-live="polite">
+  <p id="greet" class="greet">Ana,</p>
+  <p class="sub" id="sub">tu lugar en nuestra historia es…</p>
+  <img class="cartel" id="cartel" src="" alt="">
+  <div class="actions">
+    <button id="seeMap" class="btn primary" type="button">Ver el mapa completo</button>
+    <button id="again" class="btn ghost" type="button">Buscar otro invitado</button>
+  </div>
+</section>
+
+<!-- Mapa libre -->
+<div id="mapHud" class="mapHud" hidden>
+  <p>Arrastra y pellizca para recorrer · Toca un reino para ver su cartel</p>
+  <div class="actions">
+    <button id="mine" class="btn primary" type="button">Volver a mi reino</button>
+    <button id="again2" class="btn ghost" type="button">Otro invitado</button>
+  </div>
+</div>
+
+<div class="brand">M <span>&amp;</span> M <small>12.12.2026</small></div>
+<script src="./config.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
