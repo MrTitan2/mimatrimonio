@@ -35,7 +35,18 @@
 
   // ---------------------------------------------------------- mapa
   const stage = $('#stage'), map = $('#map'), img = $('#mapImg'), spot = $('#spot'), pin = $('#pin');
-  let MW = 2896, MH = 2172;                 // tamaño natural del mapa
+  const MW = 2896, MH = 2172;               // tamaño natural de mapa.webp (mapa_mini.webp tiene la misma proporción)
+  // en la bienvenida basta la versión liviana (va desenfocada); la grande (1,7 MB) se pide
+  // cuando el invitado empieza a escribir, al iniciar el viaje o unos segundos después de cargar
+  let mapaGrande = null;
+  function cargarMapaGrande() {
+    if (!mapaGrande) {
+      const im = new Image(); im.src = './assets/mapa.webp';
+      const usar = () => { img.src = im.src; };
+      mapaGrande = im.decode().then(usar, usar);
+    }
+    return mapaGrande;
+  }
   const view = { s: 1, x: 0, y: 0 };
   function apply(animate) {
     map.classList.toggle('anim', !!animate && !reduced);
@@ -97,6 +108,7 @@
   async function viaje(g) {
     const token = ++enCurso;
     elegido = g;
+    cargarMapaGrande();
     setEstado('viaje');
     $('#intro').classList.remove('visible');
     clearTimeout(viaje.t); viaje.t = setTimeout(() => { if (estado !== 'intro') $('#intro').hidden = true; }, reduced ? 0 : 850);
@@ -131,10 +143,36 @@
   function mapaLibre() {
     setEstado('libre');
     $('#result').hidden = true; spot.classList.remove('on'); stage.classList.remove('soft');
-    overview(true);
+    cargarMapaGrande();
+    // en celular vertical el mapa completo queda muy chico: se abre con zoom, centrado en el reino del invitado
+    const s = desktop() ? fitScale() : Math.min(coverScale(), fitScale() * 2.2);
+    const c = elegido ? REINOS[elegido.reino].foco : [50, 50];
+    view.s = s; view.x = W() / 2 - c[0] / 100 * MW * s; view.y = H() / 2 - c[1] / 100 * MH * s;
+    limitView(); apply(true);
     setTimeout(() => map.classList.remove('anim'), 2300);
     $('#mapHud').hidden = false;
   }
+  // alternativa a pellizcar / rueda: botones + − y teclado (+, −, flechas)
+  function moverLibre(fn) {
+    if (estado !== 'libre') return;
+    map.classList.remove('anim'); map.classList.toggle('quick', !reduced);
+    fn(); limitView(); apply(false);
+  }
+  const zoomCentro = f => moverLibre(() => zoomAt(W() / 2, H() / 2, f));
+  $('#zoomIn').addEventListener('click', () => zoomCentro(1.4));
+  $('#zoomOut').addEventListener('click', () => zoomCentro(1 / 1.4));
+  document.addEventListener('keydown', e => {
+    if (estado !== 'libre' || e.target instanceof HTMLInputElement) return;
+    const paso = 90, k = e.key;
+    if (k === '+' || k === '=') zoomCentro(1.4);
+    else if (k === '-' || k === '_') zoomCentro(1 / 1.4);
+    else if (k === 'ArrowLeft') moverLibre(() => { view.x += paso; });
+    else if (k === 'ArrowRight') moverLibre(() => { view.x -= paso; });
+    else if (k === 'ArrowUp') moverLibre(() => { view.y += paso; });
+    else if (k === 'ArrowDown') moverLibre(() => { view.y -= paso; });
+    else return;
+    e.preventDefault();
+  });
 
   function volverIntro() {
     ++enCurso; elegido = null;
@@ -142,7 +180,7 @@
     $('#result').hidden = true; $('#mapHud').hidden = true; banner('');
     spot.classList.remove('on'); pin.hidden = true;
     stage.classList.remove('soft'); stage.classList.add('blurred'); overview(false, true);
-    $('#guest').value = ''; $('#go').disabled = true; $('#nohit').hidden = true;
+    $('#guest').value = ''; $('#nohit').hidden = true;
     $('#intro').hidden = false; void $('#intro').offsetWidth;
     $('#intro').classList.add('visible');
   }
@@ -154,10 +192,14 @@
     if (!t.length) return [];
     return INVITADOS.filter(g => { const n = norm(g.nombre); return t.every(w => n.split(' ').some(p => p.startsWith(w)) || n.includes(w)); }).slice(0, 6);
   }
-  function mostrarCoincidencias(q) {
-    const res = buscar(q), box = $('#matches');
+  function mostrarCoincidencias(q, alEnviar) {
+    const res = buscar(q), box = $('#matches'), nohit = $('#nohit');
     box.innerHTML = '';
-    $('#nohit').hidden = !(norm(q).length >= 3 && !res.length);
+    // al enviar siempre se responde algo: el botón nunca queda "muerto"
+    let aviso = '';
+    if (!res.length && alEnviar && !norm(q)) aviso = 'Escribe tu nombre para buscar tu reino.';
+    else if (!res.length && (alEnviar || norm(q).length >= 3)) aviso = 'No encontramos ese nombre. Prueba solo con tu nombre o tu apellido.';
+    nohit.textContent = aviso; nohit.hidden = !aviso;
     if (!res.length) { box.hidden = true; $('#guest').setAttribute('aria-expanded', 'false'); return; }
     res.forEach(g => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'match'; b.setAttribute('role', 'option'); b.textContent = g.nombre;
@@ -174,7 +216,7 @@
   }
   function elegir(g) {
     seleccion = g; $('#guest').value = g.nombre; $('#matches').hidden = true; $('#nohit').hidden = true;
-    $('#guest').setAttribute('aria-expanded', 'false'); $('#go').disabled = false; $('#go').focus();
+    $('#guest').setAttribute('aria-expanded', 'false'); $('#go').focus();
     new Image().src = `./assets/carteles/${g.reino}.webp`;
   }
   // un único invitado posible (o nombre exacto) aunque no se toque la sugerencia
@@ -185,9 +227,9 @@
   function intentarViaje() {
     if (!seleccion) { const g = resolver($('#guest').value); if (g) elegir(g); }
     if (seleccion) { $('#guest').blur(); viaje(seleccion); }
-    else mostrarCoincidencias($('#guest').value);
+    else { mostrarCoincidencias($('#guest').value, true); $('#guest').focus(); }
   }
-  $('#guest').addEventListener('input', e => { seleccion = null; $('#go').disabled = !resolver(e.target.value); mostrarCoincidencias(e.target.value); });
+  $('#guest').addEventListener('input', e => { seleccion = null; cargarMapaGrande(); mostrarCoincidencias(e.target.value); });
   $('#guest').addEventListener('keydown', e => {
     if (e.key === 'Escape') $('#matches').hidden = true;
     if (e.key === 'Enter') { e.preventDefault(); intentarViaje(); }
@@ -205,7 +247,7 @@
 
   // ---------------------------------------------------------- mapa libre: arrastrar, pellizcar, tocar reinos
   const ptrs = new Map(); let moved = 0, pinch0 = null;
-  stage.addEventListener('pointerdown', e => { if (estado !== 'libre') return; stage.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); moved = 0; map.classList.remove('anim'); });
+  stage.addEventListener('pointerdown', e => { if (estado !== 'libre') return; stage.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); moved = 0; map.classList.remove('anim', 'quick'); });
   stage.addEventListener('pointermove', e => {
     if (estado !== 'libre' || !ptrs.has(e.pointerId)) return;
     const prev = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
@@ -241,11 +283,13 @@
 
   // ---------------------------------------------------------- inicio
   setEstado('intro');
-  img.addEventListener('load', () => { MW = img.naturalWidth; MH = img.naturalHeight; if (estado === 'intro') overview(false, true); });
-  if (img.complete && img.naturalWidth) { MW = img.naturalWidth; MH = img.naturalHeight; }
   overview(false, true);
   cargarInvitados();
   // precarga de carteles cuando la página ya cargó
-  addEventListener('load', () => setTimeout(() => Object.keys(REINOS).forEach(id => { new Image().src = `./assets/carteles/${id}.webp`; }), 1500));
+  addEventListener('load', () => {
+    setTimeout(() => Object.keys(REINOS).forEach(id => { new Image().src = `./assets/carteles/${id}.webp`; }), 1500);
+    setTimeout(cargarMapaGrande, 4000);
+  });
+  $('#guest').addEventListener('focus', cargarMapaGrande);
   window.__MAPA__ = { viaje, get invitados() { return INVITADOS; }, focusOn, mapaLibre, mostrarResultado, volverIntro };
 })();

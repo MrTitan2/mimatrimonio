@@ -7,9 +7,21 @@
 <meta name="robots" content="noindex">
 <title>Mapa de los Reinos · Matías & Monserrat</title>
 <meta name="description" content="Encuentra tu lugar en nuestra historia · 12.12.2026">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_CL">
+<meta property="og:url" content="https://mrtitan2.github.io/mimatrimonio/">
+<meta property="og:title" content="Mapa de los Reinos · Matías & Monserrat">
+<meta property="og:description" content="Encuentra tu lugar en nuestra historia · 12.12.2026">
+<meta property="og:image" content="https://mrtitan2.github.io/mimatrimonio/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Mapa de los Reinos con las mesas de Matías y Monserrat">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="./assets/icono.png">
+<link rel="apple-touch-icon" href="./assets/icono.png">
 <link rel="preload" href="./assets/marco_bienvenida.webp" as="image">
-<link rel="preload" href="./assets/Cormorant-Italic.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="./assets/Cormorant.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./assets/cormorant-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="./assets/cormorant.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
@@ -17,7 +29,7 @@
 <div class="bgmap" aria-hidden="true"></div>
 <div id="stage" class="stage blurred" aria-hidden="true">
   <div id="map" class="map">
-    <img id="mapImg" src="./assets/mapa.webp" alt="" draggable="false">
+    <img id="mapImg" src="./assets/mapa_mini.webp" alt="" draggable="false">
     <div id="pin" class="pin" hidden><i></i><i></i><b></b></div>
   </div>
 </div>
@@ -40,7 +52,7 @@
         <div id="matches" class="matches" role="listbox" aria-label="Invitados encontrados" hidden></div>
       </div>
       <p id="nohit" class="nohit" role="status" hidden>No encontramos ese nombre. Prueba solo con tu nombre o tu apellido.</p>
-      <button id="go" class="btn primary go" type="submit" disabled>Ver mi lugar en el mapa <span aria-hidden="true">✦</span></button>
+      <button id="go" class="btn primary go" type="submit">Ver mi lugar en el mapa <span aria-hidden="true">✦</span></button>
       <img class="orn lirio" src="./assets/adorno_lirio.webp" alt="">
       <p class="signature">Matías <span>&amp;</span> Monserrat</p>
     </div>
@@ -64,7 +76,11 @@
 
 <!-- Mapa libre -->
 <div id="mapHud" class="mapHud" hidden>
-  <p>Arrastra y pellizca para recorrer · Toca un reino para ver su cartel</p>
+  <p>Arrastra para recorrer · Toca un reino para ver su cartel</p>
+  <div class="zoom" role="group" aria-label="Zoom del mapa">
+    <button id="zoomIn" class="btn ghost" type="button" aria-label="Acercar el mapa">+</button>
+    <button id="zoomOut" class="btn ghost" type="button" aria-label="Alejar el mapa">−</button>
+  </div>
   <div class="actions">
     <button id="mine" class="btn primary" type="button">Volver a mi reino</button>
     <button id="again2" class="btn ghost" type="button">Otro invitado</button>
